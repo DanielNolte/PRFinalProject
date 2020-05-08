@@ -38,20 +38,29 @@ imagesTrain = scoreTrain(:,1:idx);
 
 %Train model with best parameters
 t = templateSVM('KernelFunction','gaussian','BoxConstraint',7.39,'KernelScale',6.7);
+tic
 Mdl = fitcecoc(imagesTrain,labelsTrain,'Learners',t,'Options',statset('UseParallel',true),'Verbose',1);
-
+TrainTime = toc;
 % Transform test data to new PCA components
 imagesTest = bsxfun(@minus,imagesTest,mu)*coeff(:,1:idx);
 
 %%
 %Evaluate training performance
+
 yhatTrain =Mdl.predict(imagesTrain);
 classperfTrain = classperf(labelsTrain,yhatTrain);
+trainScore = classperfTrain.CorrectRate;
+trainSen = classperfTrain.Sensitivity;
+trainSpec = classperfTrain.Specificity;
 
 %Evaluate test performance
+tic
 yhatTest =Mdl.predict(imagesTest);
+TestTime = toc;
 classperfTest = classperf(labelsTest,yhatTest);
-
+testScore = classperfTest.CorrectRate;
+testSen = classperfTest.Sensitivity;
+testSpec = classperfTest.Specificity;
 
 %%
 function images = loadMNISTImages(filename)
